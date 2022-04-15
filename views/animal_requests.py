@@ -111,7 +111,15 @@ def get_single_animal(id):
             a.breed,
             a.customer_id,
             a.location_id,
+            l.name location_name,
+            l.address location_address,
+            c.name customer_name,
+            c.address customer_address
         FROM animal a
+        JOIN Location l
+            ON l.id = a.location_id
+        JOIN Customer c
+            on c.id = a.customer_id
         WHERE a.id = ?
         """, ( id, ))
 
@@ -122,6 +130,15 @@ def get_single_animal(id):
         animal = Animal(data['id'], data['name'], data['status'],
                             data['breed'], data['customer_id'],
                             data['location_id'])
+
+        location = Location(data['location_id'], data['location_name'], ['location_address'])
+
+        customer = Customer(data['customer_id'], data['customer_name'], data['customer_address'])
+
+        animal.location = location.__dict__
+
+        animal.customer = customer.__dict__
+
 
         return json.dumps(animal.__dict__)
 

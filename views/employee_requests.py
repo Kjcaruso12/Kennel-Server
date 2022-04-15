@@ -1,25 +1,25 @@
 import sqlite3
 import json
-from models import Employee, Location
+from models import Employee, Location, Animal
 
 EMPLOYEES = [
     {
         "id": 1,
         "name": "Lynea Kohen",
         "address": "639 Butterfield Circle",
-        "locationId": 1
+        "location_id": 1
     },
     {
         "id": 2,
         "name": "Layney Stokell",
         "address": "2 Hoffman Terrace",
-        "locationId": 1
+        "location_id": 1
     },
     {
         "id": 3,
         "name": "Janifer Kunkel",
         "address": "01599 Mandrake Avenue",
-        "locationId": 2
+        "location_id": 2
     }
 ]
 
@@ -63,7 +63,7 @@ def get_all_employees():
                             row['location_id'])
 
             # Create a Location instance from the current row
-            location = Location(row['id'], row['location_name'], row['location_address'])
+            location = Location(row['location_id'], row['location_name'], row['location_address'])
 
             # Add the dictionary representation of the location to the animal
             employee.location = location.__dict__
@@ -86,12 +86,16 @@ def get_single_employee(id):
         # into the SQL statement.
         db_cursor.execute("""
         SELECT
-            a.id,
-            a.name,
-            a.address,
-            a.location_id
-        FROM employee a
-        WHERE a.id = ?
+            e.id,
+            e.name,
+            e.address,
+            e.location_id,
+            l.name location_name,
+            l.address location_address
+        FROM employee e
+        JOIN Location l
+            ON l.id = e.location_id
+        WHERE e.id = ?
         """, ( id, ))
 
         # Load the single result into memory
@@ -101,6 +105,10 @@ def get_single_employee(id):
         # Create an employee instance from the current row.
         employee = Employee(data['id'], data['name'], data['address'],
                         data['location_id'])
+
+        location = Location(data['location_id'], data['location_name'], ['location_address'])
+
+        employee.location = location.__dict__
 
         return json.dumps(employee.__dict__)
 
